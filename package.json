@@ -7,7 +7,11 @@
     "start": "node server.js",
     "dev": "node ace serve --watch",
     "lint": "eslint . --ext=.ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "controller": "node ace make:controller",
+    "model": "node ace make:model",
+    "migration": "node ace make:migration",
+    "migrate": "node ace migration:run"
   },
   "devDependencies": {
     "@adonisjs/assembler": "^5.0.0",
