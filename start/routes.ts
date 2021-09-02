@@ -20,4 +20,4 @@
 
 import Route from '@ioc:Adonis/Core/Route'
 
-Route.post('/projects', 'ProjectController.create')
+Route.post('/projects', 'ProjectsController.create')
