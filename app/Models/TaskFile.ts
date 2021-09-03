@@ -1,12 +1,9 @@
 import { DateTime } from 'luxon'
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
-export default class File extends BaseModel {
+export default class TaskFile extends BaseModel {
   @column({ isPrimary: true })
-  public id: string
-
-  @column({ columnName: 'file_url' })
-  public fileUrl: string
+  public id: number
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
