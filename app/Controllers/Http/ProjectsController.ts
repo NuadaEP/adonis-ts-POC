@@ -4,6 +4,12 @@ import { schema } from '@ioc:Adonis/Core/Validator'
 import Project from 'App/Models/Project'
 
 export default class ProjectsController {
+  public async index(): Promise<Project[]> {
+    const projects = await Project.findMany([])
+
+    return projects
+  }
+
   public async create({ request }: HttpContextContract): Promise<Project> {
     const { projectName } = request.only(['projectName'])
 
