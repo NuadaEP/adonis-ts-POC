@@ -5,9 +5,17 @@ import Project from 'App/Models/Project'
 
 export default class ProjectsController {
   public async index(): Promise<Project[]> {
-    const projects = await Project.findMany([])
+    const projects = await Project.all()
 
     return projects
+  }
+
+  public async show({ request }: HttpContextContract): Promise<Project> {
+    const projectId = request.param('projectId')
+
+    const project = await Project.findByOrFail('id', projectId)
+
+    return project
   }
 
   public async create({ request }: HttpContextContract): Promise<Project> {
