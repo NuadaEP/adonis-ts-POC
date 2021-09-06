@@ -38,6 +38,12 @@ export default class ProjectsController {
     const projectId = request.param('projectId')
     const { projectName } = request.only(['projectName'])
 
+    const schemaValidator = schema.create({
+      projectName: schema.string(),
+    })
+
+    await request.validate({ schema: schemaValidator })
+
     const project = await Project.updateOrCreate({ id: projectId }, { name: projectName })
 
     return project

@@ -25,4 +25,5 @@ Route.group(() => {
   Route.get('/', 'ProjectsController.index')
   Route.get('/:projectId', 'ProjectsController.show')
   Route.post('/', 'ProjectsController.create')
+  Route.put('/:projectId', 'ProjectsController.update')
 }).prefix('/projects')
