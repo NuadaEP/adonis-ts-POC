@@ -33,4 +33,13 @@ export default class ProjectsController {
 
     return project
   }
+
+  public async update({ request }: HttpContextContract): Promise<Project> {
+    const projectId = request.param('projectId')
+    const { projectName } = request.only(['projectName'])
+
+    const project = await Project.updateOrCreate({ id: projectId }, { name: projectName })
+
+    return project
+  }
 }
