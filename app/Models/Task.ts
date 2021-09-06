@@ -5,7 +5,7 @@ import File from './File'
 
 export default class Task extends BaseModel {
   @column({ isPrimary: true })
-  public id: number
+  public id: string
 
   @column()
   public name: string
