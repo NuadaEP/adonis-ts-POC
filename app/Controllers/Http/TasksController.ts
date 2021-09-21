@@ -45,4 +45,21 @@ export default class TasksController {
 
     return task
   }
+
+  public async update({ request }: HttpContextContract): Promise<Task | Array<FileUploadError[]>> {
+    const { taskId } = request.param('taskId')
+    const { name, description } = request.only(['name', 'description'])
+
+    const schemaValidator = schema.create({
+      name: schema.string.optional(),
+      description: schema.string.optional(),
+    })
+
+    const [, task] = await Promise.all([
+      request.validate({ schema: schemaValidator }),
+      Task.updateOrCreate({ id: taskId }, { name, description }),
+    ])
+
+    return task
+  }
 }
