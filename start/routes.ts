@@ -26,4 +26,5 @@ Route.group(() => {
   Route.get('/:projectId', 'ProjectsController.show')
   Route.post('/', 'ProjectsController.create')
   Route.put('/:projectId', 'ProjectsController.update')
+  Route.group(() => {}).prefix('/tasks')
 }).prefix('/projects')

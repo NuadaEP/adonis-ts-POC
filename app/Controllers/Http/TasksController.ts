@@ -14,6 +14,14 @@ export default class TasksController {
     return tasks
   }
 
+  public async show({ request }: HttpContextContract): Promise<Task> {
+    const taskId = request.param('taskId')
+
+    const task = await Task.findByOrFail('id', taskId)
+
+    return task
+  }
+
   public async create({ request }: HttpContextContract): Promise<Task | Array<FileUploadError[]>> {
     const projectId = request.param('projectId')
     const { name, description } = request.only(['name', 'description'])
@@ -61,5 +69,15 @@ export default class TasksController {
     ])
 
     return task
+  }
+
+  public async delete({ request }: HttpContextContract): Promise<boolean> {
+    const taskId = request.param('taskId')
+
+    const task = await Task.findByOrFail('id', taskId)
+
+    await task.delete()
+
+    return true
   }
 }
