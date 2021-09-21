@@ -1,16 +1,7 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { FileUploadError } from '@ioc:Adonis/Core/BodyParser'
-import Application from '@ioc:Adonis/Core/Application'
-import { v4 as uuidv4 } from 'uuid'
 
 import TaskFile from 'App/Models/TaskFile'
-import File from 'App/Models/File'
-
-type StoragedImage = {
-  name: string
-  path: string
-  errors: FileUploadError[]
-}
+import { CreateTaskFileService } from 'App/Services/Task/CreateTaskFileService'
 
 export default class TaskFilesController {
   public async create({ request }: HttpContextContract): Promise<TaskFile[]> {
@@ -20,47 +11,13 @@ export default class TaskFilesController {
       extnames: ['jpg', 'png'],
     })
 
-    const storagedImages: Array<StoragedImage> = []
+    const createTaskFileService = new CreateTaskFileService()
 
-    for await (let image of images) {
-      const imageHashedName = `${uuidv4()}-${image.fileName}`
+    const createTaskFile = await createTaskFileService.execute({
+      taskId,
+      files: images,
+    })
 
-      if (image && !image.isValid) {
-        storagedImages.push({
-          name: imageHashedName,
-          path: `${Application.tmpPath('uploads')}/${imageHashedName}`,
-          errors: image.errors,
-        })
-      } else {
-        storagedImages.push({
-          name: imageHashedName,
-          path: `${Application.tmpPath('uploads')}/${imageHashedName}`,
-          errors: [],
-        })
-      }
-    }
-
-    const files = await Promise.all(
-      images.map(async (image) => {
-        const findFileByFilename = storagedImages.find(
-          (img) => img.name === image.fileName
-        ) as StoragedImage
-
-        await image.move(Application.tmpPath('uploads'), { name: `${findFileByFilename.name}` })
-
-        const file = await File.create({
-          fileUrl: findFileByFilename.path,
-        })
-
-        const taskFiles = await TaskFile.create({
-          taskId,
-          fileId: file.id,
-        })
-
-        return taskFiles
-      })
-    )
-
-    return files
+    return createTaskFile
   }
 }

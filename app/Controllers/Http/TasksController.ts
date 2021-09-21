@@ -1,18 +1,9 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { FileUploadError } from '@ioc:Adonis/Core/BodyParser'
 import { schema } from '@ioc:Adonis/Core/Validator'
-import Application from '@ioc:Adonis/Core/Application'
-import { v4 as uuidv4 } from 'uuid'
 
 import Task from 'App/Models/Task'
-import TaskFile from 'App/Models/TaskFile'
-import File from 'App/Models/File'
-
-type StoragedImage = {
-  name: string
-  path: string
-  errors: FileUploadError[]
-}
+import { CreateTaskFileService } from 'App/Services/Task/CreateTaskFileService'
 
 export default class TasksController {
   public async index({ request }: HttpContextContract): Promise<Task[]> {
@@ -36,56 +27,21 @@ export default class TasksController {
       description: schema.string(),
     })
 
-    const storagedImages: Array<StoragedImage> = []
+    const createTaskFileService = new CreateTaskFileService()
 
-    for await (let image of images) {
-      const imageHashedName = `${uuidv4()}-${image.fileName}`
+    const [, task] = await Promise.all([
+      request.validate({ schema: schemaValidator }),
+      await Task.create({
+        name,
+        description,
+        projectId,
+      }),
+    ])
 
-      if (image && !image.isValid) {
-        storagedImages.push({
-          name: imageHashedName,
-          path: `${Application.tmpPath('uploads')}/${imageHashedName}`,
-          errors: image.errors,
-        })
-      } else {
-        storagedImages.push({
-          name: imageHashedName,
-          path: `${Application.tmpPath('uploads')}/${imageHashedName}`,
-          errors: [],
-        })
-      }
-    }
-
-    await request.validate({ schema: schemaValidator })
-
-    const task = await Task.create({
-      name,
-      description,
-      projectId,
+    await createTaskFileService.execute({
+      taskId: task.id,
+      files: images,
     })
-
-    await Promise.all(
-      images.map(async (image) => {
-        if (image.errors.length > 0) {
-          return 'Some image does have an error'
-        }
-
-        const findFileByFilename = storagedImages.find(
-          (img) => img.name === image.fileName
-        ) as StoragedImage
-
-        await image.move(Application.tmpPath('uploads'), { name: `${findFileByFilename.name}` })
-
-        const file = await File.create({
-          fileUrl: findFileByFilename.path,
-        })
-
-        await TaskFile.create({
-          taskId: task.id,
-          fileId: file.id,
-        })
-      })
-    )
 
     return task
   }
