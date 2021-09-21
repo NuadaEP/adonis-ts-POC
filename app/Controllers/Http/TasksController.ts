@@ -19,6 +19,8 @@ export default class TasksController {
 
     const task = await Task.findByOrFail('id', taskId)
 
+    await task.load('files')
+
     return task
   }
 
@@ -51,6 +53,8 @@ export default class TasksController {
       files: images,
     })
 
+    await task.load('files')
+
     return task
   }
 
@@ -67,6 +71,8 @@ export default class TasksController {
       request.validate({ schema: schemaValidator }),
       Task.updateOrCreate({ id: taskId }, { name, description }),
     ])
+
+    await task.load('files')
 
     return task
   }

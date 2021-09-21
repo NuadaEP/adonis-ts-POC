@@ -26,5 +26,11 @@ Route.group(() => {
   Route.get('/:projectId', 'ProjectsController.show')
   Route.post('/', 'ProjectsController.create')
   Route.put('/:projectId', 'ProjectsController.update')
-  Route.group(() => {}).prefix('/tasks')
+  Route.group(() => {
+    Route.get('/:projectId', 'TasksController.index')
+    Route.patch('/:taskId', 'TasksController.show')
+    Route.post('/:projectId', 'TasksController.create')
+    Route.put('/:taskId', 'TasksController.update')
+    Route.delete('/:taskId', 'TasksController.delete')
+  }).prefix('/tasks')
 }).prefix('/projects')
