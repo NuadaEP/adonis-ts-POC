@@ -8,6 +8,12 @@ import Task from 'App/Models/Task'
 import TaskFile from 'App/Models/TaskFile'
 import File from 'App/Models/File'
 
+type StoragedImage = {
+  name: string
+  path: string
+  errors: FileUploadError[]
+}
+
 export default class TasksController {
   public async create({ request }: HttpContextContract): Promise<Task | Array<FileUploadError[]>> {
     const projectId = request.param('projectId')
@@ -22,18 +28,24 @@ export default class TasksController {
       description: schema.string(),
     })
 
-    const imageErros: Array<FileUploadError[]> = []
+    const storagedImages: Array<StoragedImage> = []
 
     for await (let image of images) {
-      if (image && !image.isValid) {
-        imageErros.push(image.errors)
-      } else {
-        await image.move(Application.tmpPath('uploads'), { name: `${uuidv4()}-${image.fileName}` })
-      }
-    }
+      const imageHashedName = `${uuidv4()}-${image.fileName}`
 
-    if (imageErros.length > 0) {
-      return imageErros
+      if (image && !image.isValid) {
+        storagedImages.push({
+          name: imageHashedName,
+          path: `${Application.tmpPath('uploads')}/${imageHashedName}`,
+          errors: image.errors,
+        })
+      } else {
+        storagedImages.push({
+          name: imageHashedName,
+          path: `${Application.tmpPath('uploads')}/${imageHashedName}`,
+          errors: [],
+        })
+      }
     }
 
     await request.validate({ schema: schemaValidator })
@@ -46,8 +58,18 @@ export default class TasksController {
 
     await Promise.all(
       images.map(async (image) => {
+        if (image.errors.length > 0) {
+          return 'Some image does have an error'
+        }
+
+        const findFileByFilename = storagedImages.find(
+          (img) => img.name === image.fileName
+        ) as StoragedImage
+
+        await image.move(Application.tmpPath('uploads'), { name: `${findFileByFilename.name}` })
+
         const file = await File.create({
-          fileUrl: Application.tmpPath('uploads'),
+          fileUrl: findFileByFilename.path,
         })
 
         await TaskFile.create({
