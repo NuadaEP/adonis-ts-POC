@@ -15,6 +15,14 @@ type StoragedImage = {
 }
 
 export default class TasksController {
+  public async index({ request }: HttpContextContract): Promise<Task[]> {
+    const projectId = request.param('projectId')
+
+    const tasks = await Task.findMany(projectId)
+
+    return tasks
+  }
+
   public async create({ request }: HttpContextContract): Promise<Task | Array<FileUploadError[]>> {
     const projectId = request.param('projectId')
     const { name, description } = request.only(['name', 'description'])
