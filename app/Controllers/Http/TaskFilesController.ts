@@ -1,4 +1,5 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import File from 'App/Models/File'
 
 import TaskFile from 'App/Models/TaskFile'
 import { CreateTaskFileService } from 'App/Services/Task/CreateTaskFileService'
@@ -19,5 +20,16 @@ export default class TaskFilesController {
     })
 
     return createTaskFile
+  }
+
+  public async delete({ request }: HttpContextContract): Promise<boolean> {
+    const { taskId, fileId } = request.params()
+
+    await Promise.all([
+      TaskFile.query().where('taskId', taskId).andWhere('fileId', fileId).delete(),
+      File.query().where('fileId', fileId).delete(),
+    ])
+
+    return true
   }
 }

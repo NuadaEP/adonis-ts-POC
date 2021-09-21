@@ -31,7 +31,7 @@ export default class TasksController {
 
     const [, task] = await Promise.all([
       request.validate({ schema: schemaValidator }),
-      await Task.create({
+      Task.create({
         name,
         description,
         projectId,
